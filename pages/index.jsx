@@ -5,25 +5,31 @@ import { useState } from "react";
 const Home = () => {
   const [wallet, setWalletAddress] = useState("");
   const [collection, setCollectionAddress] = useState("");
+  const [nfts, setNFTs] = useState([]);
 
   const fetchNFT = async () => {
+    // Replace with your Alchemy API key:
+    const API_KEY = "Ra-uS4dfMmxQ6LbKM_ihgyygkGHkWmim";
+    const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${API_KEY}/getNFTs/`;
     let nft;
     if (!collection.length) {
       // Setup request options:
       var requestOptions = {
         method: "GET",
-        redirect: "follow",
       };
 
-      // Replace with your Alchemy API key:
-      const apiKey = "demo";
-      const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${apiKey}/getNFTs/`;
       // Replace with the wallet address you want to query:
-      const ownerAddr = "0xF5FFF32CF83A1A614e15F25Ce55B0c0A6b5F8F2c";
-      const fetchURL = `${baseURL}?owner=${ownerAddr}`;
+      const fetchURL = `${baseURL}?owner=${wallet}`;
 
-      nft = await fetch();
+      nft = await fetch(fetchURL, requestOptions).then((data) => data.json());
     } else {
+      const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}`;
+      //console.log("fetch nfts collection owned by address");
+      nft = await fetch(fetchURL, requestOptions).then((data) => data.json());
+    }
+    if (nft) {
+      //console.log("nfts", nft);
+      setNFTs(nft.ownedNfts);
     }
   };
   return (
@@ -46,6 +52,7 @@ const Home = () => {
           <button onClick={() => fetchNFT()}>Let's go</button>
         </label>
       </div>
+      {console.log(nfts)}
     </div>
   );
 };
