@@ -6,12 +6,13 @@ const Home = () => {
   const [wallet, setWalletAddress] = useState("");
   const [collection, setCollectionAddress] = useState("");
   const [nfts, setNFTs] = useState([]);
+  const [fetchForCollection, setFetchForCollection] = useState(false);
 
-  const fetchNFT = async () => {
+  const fetchNFTs = async () => {
     // Replace with your Alchemy API key:
     const API_KEY = "Ra-uS4dfMmxQ6LbKM_ihgyygkGHkWmim";
     const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${API_KEY}/getNFTs/`;
-    let nft;
+    let nfts;
     if (!collection.length) {
       // Setup request options:
       var requestOptions = {
@@ -21,15 +22,34 @@ const Home = () => {
       // Replace with the wallet address you want to query:
       const fetchURL = `${baseURL}?owner=${wallet}`;
 
-      nft = await fetch(fetchURL, requestOptions).then((data) => data.json());
+      nfts = await fetch(fetchURL, requestOptions).then((data) => data.json());
     } else {
       const fetchURL = `${baseURL}?owner=${wallet}&contractAddresses%5B%5D=${collection}`;
-      //console.log("fetch nfts collection owned by address");
-      nft = await fetch(fetchURL, requestOptions).then((data) => data.json());
+      console.log("fetch nfts collection owned by address");
+      nfts = await fetch(fetchURL, requestOptions).then((data) => data.json());
     }
-    if (nft) {
-      //console.log("nfts", nft);
-      setNFTs(nft.ownedNfts);
+    if (nfts) {
+      console.log("nfts", nfts);
+      setNFTs(nfts.ownedNfts);
+    }
+    //0x648550Eaca1654A1e65B13cf385Ef9Ff505dE909
+    //0xBC4CA0EdA7647A8aB7C2061c2E118A18a936f13D
+  };
+  const fetchNFTsForCollection = async () => {
+    if (collection.length) {
+      var requestOptions = {
+        method: "GET",
+      };
+      const API_KEY = "Ra-uS4dfMmxQ6LbKM_ihgyygkGHkWmim";
+      const baseURL = `https://eth-mainnet.g.alchemy.com/nft/v2/${API_KEY}/getNFTsForCollection/`;
+      const fetchURL = `${baseURL}?contractAddress=${collection}&withMetadata=${"true"}`;
+      let nft = await fetch(fetchURL, requestOptions).then((data) =>
+        data.json()
+      );
+      if (nft) {
+        console.log("nft in collection", nft);
+        setNFTs(nfts.nfts);
+      }
     }
   };
   return (
@@ -48,11 +68,22 @@ const Home = () => {
           placeholder="add the collection address"
         ></input>
         <label>
-          <input type={"checkbox"}></input>
-          <button onClick={() => fetchNFT()}>Let's go</button>
+          <input
+            onChange={(e) => setFetchForCollection(e.target.checked)}
+            type={"checkbox"}
+          ></input>
+          Fetch for collection
         </label>
+        <button
+          onClick={() => {
+            if (fetchForCollection) {
+              fetchNFTsForCollection();
+            } else fetchNFTs();
+          }}
+        >
+          Let's go
+        </button>
       </div>
-      {console.log(nfts)}
     </div>
   );
 };
